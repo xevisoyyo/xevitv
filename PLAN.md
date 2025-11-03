@@ -1,4 +1,6 @@
 # Plan de Desarrollo - Extensión "XeviTV"
+Por favor habla en castellano.
+Los cambios paso a paso y preguntando antes, para poder testearlos individualmente.
 
 ## Objetivo Principal
 Crear una extensión que, al estar activa, pone vídeos de canales de TV en pantalla completa y permite cambiar de canal a través de un menú invocado por una tecla.
@@ -8,7 +10,7 @@ Crear una extensión que, al estar activa, pone vídeos de canales de TV en pant
 - [x] **Setup Inicial del `background.js`**: Lógica para instalar la extensión, guardar el estado (activo/inactivo) en `chrome.storage.local` y cambiar el icono de la extensión según el estado.
 
 ### Fase 1: Content Script general y Menú de canales
-- [ ] **Definir lista de canales de ejemplo**: Crear una estructura de datos simple en el código.
+- [-] **Definir lista de canales de ejemplo**: Crear una estructura de datos simple en el código.
 - [ ] **Crear `content-script.js`**: Registrarlo en `manifest.json` para que se inyecte en las páginas.
 - [ ] **Implementar listener de teclado**: Hacer que una tecla específica muestre/oculte el menú.
 - [ ] **Crear HTML/CSS del menú**: Diseñar el overlay y la lista de canales.

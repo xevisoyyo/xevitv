@@ -1,0 +1,6 @@
+{
+  // Establece el tamaño del tabulador en 2 espacios.
+  "editor.tabSize": 2,
+  // Inserta espacios cuando se presiona Tab.
+  "editor.insertSpaces": true
+}

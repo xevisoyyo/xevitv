@@ -1,10 +1,4 @@
-# Archivos de registro (Logs)
-*.log
-
 # Archivos de configuración del editor
-.vscode/
-.idea/
-
-# Archivos del sistema operativo
-.DS_Store
-Thumbs.db
+# Ignora todo en .vscode excepto el archivo de configuración compartido.
+.vscode/*
+!.vscode/settings.json

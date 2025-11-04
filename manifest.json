@@ -5,6 +5,13 @@
   "description": "Extensión de Chrome para ver canales de TV",
   "permissions": [
     "storage"
+    ,"tabs"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-script.js"]
+    }
   ],
   "action": {
     "default_icon": {

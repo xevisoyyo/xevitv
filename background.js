@@ -30,49 +30,62 @@ const defaultChannels = [
   }
 ];
 
-//#region       When installed or updated | set isActive 
+//#region       On extension installed or updated | set isExtensionActive 
 chrome.runtime.onInstalled.addListener(async (details) => {
     if (details.reason === 'install') {
-        // 1. Establecer el estado inicial como activo
-        await chrome.storage.sync.set({ isActive: true });
-        updateIcon(true);
-        console.log('Extensión instalada. Estado inicial: activa.');
+      console.log('Extensión instalada.');
 
-        // 2. Cargar la lista de canales por defecto desde la variable al storage.sync
-        await chrome.storage.sync.set({ channels: defaultChannels });
-        console.log('Lista de canales por defecto cargada en chrome.storage.sync.');
+      // 1. Establecer el estado inicial de la extensión como activo
+      const newState = true;
+      await setExtensionState(newState);
+
+      // 2. Cargar la lista de canales por defecto desde la variable al storage.sync
+      await chrome.storage.sync.set({ channels: defaultChannels });
+      console.log('Lista de canales por defecto cargada en chrome.storage.sync.');
     }
-    // Si es una actualización, mantenemos los datos del usuario.
-    // Pero nos aseguramos de que el icono esté en el estado correcto.
-    const { isActive } = await chrome.storage.sync.get({ isActive: true });
-    updateIcon(isActive);
 });
 //#endregion
 
-//#region       When extension clicked | set isActive 
+//#region       On extension clicked | set extension state 
 chrome.action.onClicked.addListener(async (tab) => {
-
-  // Usamos .sync para que el estado también se sincronice
-  const { isActive } = await chrome.storage.sync.get('isActive');
-  const newState = !isActive;
-  await chrome.storage.sync.set({ isActive: newState });
-  updateIcon(newState);
-  console.log(`La extensión ahora está ${newState ? 'activa' : 'inactiva'}`);
-
-  // 3. (Futuro) Notificamos a todas las pestañas sobre el cambio de estado.
-  // Por ahora, lo dejamos comentado hasta que creemos el content script.
-  /*
-  const tabs = await chrome.tabs.query({});
-  for (const t of tabs) {
-    chrome.tabs.sendMessage(t.id, { command: 'updateState', isActive: newState });
-  }
-  */
+  const newState = !(await getExtensionState());
+  await setExtensionState(newState);
+  updateListenersOnAlltabs(newState);
 });
 //#endregion 
 
+//#region   set extension state 
+async function setExtensionState(newState) {
+  await chrome.storage.sync.set({ isExtensionActive: newState });
+  updateIcon(newState);
+  console.log(`Extensión ${newState ? 'activa' : 'inactiva'}`);
+}
+//#endregion
+
+//#region   get extension state 
+async function getExtensionState() {
+  const { isExtensionActive } = await chrome.storage.sync.get('isExtensionActive');
+  return isExtensionActive;
+}
+//#endregion
+
+//#region   update listeners on all tabs  
+async function updateListenersOnAlltabs(newState) {
+  // Notificamos a todas las pestañas sobre el cambio de estado.
+  const tabs = await chrome.tabs.query({});
+  for (const t of tabs) {
+    chrome.tabs.sendMessage(t.id, { 
+      command: 'updateState',
+      isExtensionActive: newState
+    }).catch(() => {}); // Evita los avisos de promesa rechazada en pestañas sin content script 
+                        // (por ejemplo, páginas chrome:// o pestañas no recargadas tras actualizar la extensión)
+  }
+}
+//#endregion
+
 //#region       UPDATE ICON 
-function updateIcon(isActive) {
-    const iconPath = isActive ? icons.active : icons.inactive;
+function updateIcon(isExtensionActive) {
+    const iconPath = isExtensionActive ? icons.active : icons.inactive;
     chrome.action.setIcon({ path: iconPath });
 }
 //#endregion

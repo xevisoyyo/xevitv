@@ -11,8 +11,8 @@ Crear una extensión que, al estar activa, pone vídeos de canales de TV en pant
 
 ### Fase 1: Content Script general y Menú de canales
 - [-] **Definir lista de canales de ejemplo**: Crear una estructura de datos simple en el código.
-- [ ] **Crear `content-script.js`**: Registrarlo en `manifest.json` para que se inyecte en las páginas.
-- [ ] **Implementar listener de teclado**: Hacer que una tecla específica muestre/oculte el menú.
+- [+] **Crear `content-script.js`**: Registrarlo en `manifest.json` para que se inyecte en las páginas.
+- [+] **Implementar listener de teclado**: Hacer que el listener del content de cada pestaña se active o desactive al activar o desactivar la extensión.
 - [ ] **Crear HTML/CSS del menú**: Diseñar el overlay y la lista de canales.
 
 - [ ] **Comunicación con Content Scripts**: Implementar el envío de mensajes desde `background.js` a los `content-script.js` para que las páginas web puedan reaccionar al cambio de estado de la extensión.

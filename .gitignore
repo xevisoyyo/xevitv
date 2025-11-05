@@ -2,3 +2,9 @@
 # Ignora todo en .vscode excepto el archivo de configuración compartido.
 .vscode/*
 !.vscode/settings.json
+
+# Ignorar variables de entorno
+.env
+
+# Ignorar dependencias locales de Node
+node_modules/

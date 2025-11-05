@@ -12,14 +12,15 @@ Crear una extensión que, al estar activa, pone vídeos de canales de TV en pant
 ### Fase 1: Content Script general y Menú de canales
 - [-] **Definir lista de canales de ejemplo**: Crear una estructura de datos simple en el código.
 - [+] **Crear `content-script.js`**: Registrarlo en `manifest.json` para que se inyecte en las páginas.
-- [+] **Implementar listener de teclado**: Hacer que el listener del content de cada pestaña se active o desactive al activar o desactivar la extensión.
-- [ ] **Crear HTML/CSS del menú**: Diseñar el overlay y la lista de canales.
+- [+] **Crear `content-script.js`**: Desarrollar el script que se inyectará en las páginas y escuchará los mensajes del background script.
+- [+] **Comunicación con Content Scripts**: Implementar el envío de mensajes desde `background.js` a los `content-script.js` para que las páginas web puedan reaccionar al cambio de estado de la extensión.
+- [+] **Implementar listener de teclado**: Listener para mostrar y ocultar el menú de canales cuando se presiona una tecla.
+- [+] **Crear HTML/CSS del menú**: Diseñar el overlay y la lista de canales.
 
-- [ ] **Comunicación con Content Scripts**: Implementar el envío de mensajes desde `background.js` a los `content-script.js` para que las páginas web puedan reaccionar al cambio de estado de la extensión.
-- [ ] **Crear `content-script.js`**: Desarrollar el script que se inyectará en las páginas y escuchará los mensajes del background script.
-- [ ] **Definir la funcionalidad principal**: ¿Qué hará la extensión en la página cuando esté activa? (Ej: modificar el DOM, resaltar elementos, etc.).
+- [-] **Definir la funcionalidad principal**: ¿Qué hará la extensión en la página cuando esté activa? (Ej: modificar el DOM, resaltar elementos, etc.).
 
 ### Fase 2: Funcionalidad Principal
+- [ ] Crear archivos content para cada url o plataforma.
 - [ ] Implementar la entrada automática a pantalla completa.
 - [ ] Al invocar el menú, salir de la pantalla completa.
 - [ ] Al hacer clic en un canal, navegar a la nueva URL.

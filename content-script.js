@@ -1,5 +1,3 @@
-console.log("XeviTV content script cargado.");
-
 // 1. Comprobar el estado inicial de la extensión al cargar la página
 chrome.storage.sync.get("isExtensionActive", ({ isExtensionActive }) => {
     if (isExtensionActive) {

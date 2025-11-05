@@ -9,39 +9,15 @@ const icons = {
   }
 };
 
-const defaultChannels = [
-  {
-    "name": "Antena 3",
-    "dir": "antena3",
-    "platform": "atresplayer",
-    "url": "https://www.atresplayer.com/directos/antena3/"
-  },
-  {
-    "name": "Cuatro",
-    "dir": "cuatro",
-    "platform": "cuatro",
-    "url": "https://www.cuatro.com/en-directo/"
-  },
-  {
-    "name": "Tele 5",
-    "dir": "telecinco",
-    "platform": "telecinco",
-    "url": "https://www.telecinco.es/endirecto/"
-  }
-];
+saveChannelsLocaly();
 
 //#region       On extension installed or updated | set isExtensionActive 
 chrome.runtime.onInstalled.addListener(async (details) => {
     if (details.reason === 'install') {
       console.log('Extensión instalada.');
 
-      // 1. Establecer el estado inicial de la extensión como activo
       const newState = true;
       await setExtensionState(newState);
-
-      // 2. Cargar la lista de canales por defecto desde la variable al storage.sync
-      await chrome.storage.sync.set({ channels: defaultChannels });
-      console.log('Lista de canales por defecto cargada en chrome.storage.sync.');
     }
 });
 //#endregion
@@ -54,7 +30,7 @@ chrome.action.onClicked.addListener(async (tab) => {
 });
 //#endregion 
 
-//#region   set extension state 
+//#region       set extension state 
 async function setExtensionState(newState) {
   await chrome.storage.sync.set({ isExtensionActive: newState });
   updateIcon(newState);
@@ -62,14 +38,14 @@ async function setExtensionState(newState) {
 }
 //#endregion
 
-//#region   get extension state 
+//#region       get extension state 
 async function getExtensionState() {
   const { isExtensionActive } = await chrome.storage.sync.get('isExtensionActive');
   return isExtensionActive;
 }
 //#endregion
 
-//#region   update listeners on all tabs  
+//#region       update listeners on all tabs  
 async function updateListenersOnAlltabs(newState) {
   // Notificamos a todas las pestañas sobre el cambio de estado.
   const tabs = await chrome.tabs.query({});
@@ -87,5 +63,33 @@ async function updateListenersOnAlltabs(newState) {
 function updateIcon(isExtensionActive) {
     const iconPath = isExtensionActive ? icons.active : icons.inactive;
     chrome.action.setIcon({ path: iconPath });
+}
+//#endregion
+
+//#region       SAVE CHANNELS LOCALY 
+async function saveChannelsLocaly() {
+    const channels = [
+    {
+      "name": "Antena 3",
+      "dir": "antena3",
+      "platform": "atresplayer",
+      "url": "https://www.atresplayer.com/directos/antena3/"
+    },
+    {
+      "name": "Cuatro",
+      "dir": "cuatro",
+      "platform": "cuatro",
+      "url": "https://www.cuatro.com/en-directo/"
+    },
+    {
+      "name": "Tele 5",
+      "dir": "telecinco",
+      "platform": "telecinco",
+      "url": "https://www.telecinco.es/endirecto/"
+    }
+  ];
+  await new Promise(resolve => setTimeout(resolve, 200)); // simula delay
+  await chrome.storage.local.set({ channels });
+  console.log('Canales guardados en local storage.');
 }
 //#endregion

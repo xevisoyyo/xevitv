@@ -3,6 +3,10 @@
 .vscode/*
 !.vscode/settings.json
 
+# DOCS
+docs/*
+!docs/plan.md
+
 # Ignorar variables de entorno
 .env
 

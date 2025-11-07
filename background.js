@@ -9,6 +9,14 @@ const icons = {
   }
 };
 
+//#region       On Startup | sync icon with stored state 
+(async () => {
+  const isExtensionActive = await getExtensionState();
+  updateIcon(isExtensionActive);
+  await updateListenersOnAlltabs(isExtensionActive);
+})();
+//#endregion
+
 saveChannelsLocaly();
 
 //#region       On extension installed or updated | set isExtensionActive 
@@ -26,7 +34,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 chrome.action.onClicked.addListener(async (tab) => {
   const newState = !(await getExtensionState());
   await setExtensionState(newState);
-  updateListenersOnAlltabs(newState);
+  await updateListenersOnAlltabs(newState);
 });
 //#endregion 
 
@@ -40,8 +48,10 @@ async function setExtensionState(newState) {
 
 //#region       get extension state 
 async function getExtensionState() {
-  const { isExtensionActive } = await chrome.storage.sync.get('isExtensionActive');
-  return isExtensionActive;
+  // Pedimos el valor y establecemos un valor por defecto de 'true' si no se encuentra.
+  // Esto evita que la función devuelva 'undefined' en la primera ejecución.
+  const { isExtensionActive } = await chrome.storage.sync.get({ isExtensionActive: true });
+  return isExtensionActive; // Ahora esto siempre será true o false.
 }
 //#endregion
 
@@ -53,9 +63,9 @@ async function updateListenersOnAlltabs(newState) {
     chrome.tabs.sendMessage(t.id, { 
       command: 'updateState',
       isExtensionActive: newState
-    }).catch(() => {}); // Evita los avisos de promesa rechazada en pestañas sin content script 
-                        // (por ejemplo, páginas chrome:// o pestañas no recargadas tras actualizar la extensión)
+    }).catch(() => {}); // Evita los avisos de promesa rechazada en pestañas sin content script (por ejemplo, páginas chrome:// o pestañas no recargadas tras actualizar la extensión)
   }
+  console.log('XeviTV: Estado sincronizado en todas las pestañas.');
 }
 //#endregion
 
@@ -63,6 +73,7 @@ async function updateListenersOnAlltabs(newState) {
 function updateIcon(isExtensionActive) {
     const iconPath = isExtensionActive ? icons.active : icons.inactive;
     chrome.action.setIcon({ path: iconPath });
+    console.log('XeviTV: Icono sincronizado.');
 }
 //#endregion
 

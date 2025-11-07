@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "XeviTV",
   "version": "1.0.0",
-  "description": "Extensión de Chrome para ver canales de TV",
+  "description": "Extensión de Chrome para ver canales de TV online",
   "permissions": [
     "storage"
     ,"tabs"
@@ -16,8 +16,8 @@
   ],
   "action": {
     "default_icon": {
-      "16": "icons/16_active.png",
-      "48": "icons/48_active.png"
+      "16": "icons/16_inactive.png",
+      "48": "icons/48_inactive.png"
     }
   },
   "background": {
@@ -27,5 +27,11 @@
     "16": "icons/16_active.png",
     "48": "icons/48_active.png",
     "128": "icons/128.png"
-  }
+    },
+  "web_accessible_resources": [
+    {
+      "resources": [ "icons/*.png" ],
+      "matches": [ "<all_urls>" ]
+    }
+  ]
 }

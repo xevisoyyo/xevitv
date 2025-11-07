@@ -10,8 +10,8 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content-script.js"],
-      "css": ["menu.css"]
+      "js": ["src/content.js"],
+      "css": ["src/menu.css"]
     }
   ],
   "action": {
@@ -21,7 +21,7 @@
     }
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "src/background.js"
   },
   "icons": {
     "16": "icons/16_active.png",

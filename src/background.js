@@ -67,7 +67,7 @@ async function updateListenersOnAlltabs(newState) {
     chrome.tabs.sendMessage(t.id, { 
       command: 'updateState',
       isExtensionActive: newState
-    }).catch(() => {}); // Evita los avisos de promesa rechazada en pestañas sin content script (por ejemplo, páginas chrome:// o pestañas no recargadas tras actualizar la extensión)
+    }).catch(() => {}); // evita los avisos de promesa rechazada en pestañas sin content script (por ejemplo, páginas chrome:// o pestañas no recargadas tras actualizar la extensión)
   }
   console.log('XeviTV: Estado sincronizado en todas las pestañas.');
 }

@@ -9,36 +9,40 @@ const icons = {
   }
 };
 
-//#region       On Startup | sync icon with stored state 
-(async () => {
-  const isExtensionActive = await getExtensionState();
-  updateIcon(isExtensionActive);
-  await updateListenersOnAlltabs(isExtensionActive);
-})();
+//#region       INITIALIZATION 
+/**
+ * Función principal que se ejecuta cuando el service worker arranca.
+ * Orquesta todas las tareas de inicialización.
+ */
+async function initializeExtension() {
+  // Ejecutamos tareas de inicialización independientes en paralelo para mayor eficiencia.
+  await Promise.all([
+    syncInitialState(),
+    saveChannelsLocaly()
+  ]);
+  console.log('XeviTV: Extensión inicializada.');
+}
+initializeExtension();
 //#endregion
 
-saveChannelsLocaly();
+//#region       EVENT LISTENERS 
+chrome.runtime.onInstalled.addListener(async (details) => { // ON EXTENSION INSTALLED | set extension state to active 
+  if (details.reason === 'install') {
+    console.log('XeviTV: Extensión instalada.');
 
-//#region       On extension installed or updated | set isExtensionActive 
-chrome.runtime.onInstalled.addListener(async (details) => {
-    if (details.reason === 'install') {
-      console.log('Extensión instalada.');
-
-      const newState = true;
-      await setExtensionState(newState);
-    }
+    const newState = true;
+    await setExtensionState(newState);
+  }
 });
-//#endregion
 
-//#region       On extension clicked | set extension state 
-chrome.action.onClicked.addListener(async (tab) => {
+chrome.action.onClicked.addListener(async (tab) => {        // ON EXTENSION CLICKED | set extension state and update listeners on all tabs 
   const newState = !(await getExtensionState());
   await setExtensionState(newState);
   await updateListenersOnAlltabs(newState);
 });
 //#endregion 
 
-//#region       set extension state 
+//#region       FUNCTION - setExtensionState 
 async function setExtensionState(newState) {
   await chrome.storage.sync.set({ isExtensionActive: newState });
   updateIcon(newState);
@@ -46,7 +50,7 @@ async function setExtensionState(newState) {
 }
 //#endregion
 
-//#region       get extension state 
+//#region       FUNCTION - getExtensionState 
 async function getExtensionState() {
   // Pedimos el valor y establecemos un valor por defecto de 'true' si no se encuentra.
   // Esto evita que la función devuelva 'undefined' en la primera ejecución.
@@ -55,7 +59,7 @@ async function getExtensionState() {
 }
 //#endregion
 
-//#region       update listeners on all tabs  
+//#region       FUNCTION - updateListenersOnAllTabs 
 async function updateListenersOnAlltabs(newState) {
   // Notificamos a todas las pestañas sobre el cambio de estado.
   const tabs = await chrome.tabs.query({});
@@ -69,7 +73,7 @@ async function updateListenersOnAlltabs(newState) {
 }
 //#endregion
 
-//#region       UPDATE ICON 
+//#region       FUNCTION - updateIcon 
 function updateIcon(isExtensionActive) {
     const iconPath = isExtensionActive ? icons.active : icons.inactive;
     chrome.action.setIcon({ path: iconPath });
@@ -77,7 +81,16 @@ function updateIcon(isExtensionActive) {
 }
 //#endregion
 
-//#region       SAVE CHANNELS LOCALY 
+//#region       FUNCTION - syncInitialState
+async function syncInitialState() {
+  const isExtensionActive = await getExtensionState();
+  // Actualizamos el icono y notificamos a las pestañas.
+  updateIcon(isExtensionActive);
+  await updateListenersOnAlltabs(isExtensionActive);
+}
+//#endregion
+
+//#region       FUNCTION - saveChannelsLocaly 
 async function saveChannelsLocaly() {
     const channels = [
     {

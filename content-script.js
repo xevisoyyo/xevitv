@@ -1,56 +1,52 @@
 let isExtensionActive = false;
-let areFeaturesActiveInTab = false; // Nuevo estado local de la pestaña
+let areFeaturesActiveInTab = false;
+let menuElement = null;
 
-// 1. Escuchar cambios de estado globales (clic en el icono)
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.command === 'updateState') {
-        isExtensionActive = message.isExtensionActive;
+//#region       INITIALIZATION & EVENT LISTENERS 
+(function setupInitialStateAndListeners() {
+    // obtenemos el estado inicial de la extensión desde el storage
+    chrome.storage.sync.get("isExtensionActive", (data) => {
+        isExtensionActive = data.isExtensionActive;
+        // una vez que tenemos el estado inicial, actualizamos la UI por primera vez
         updateFeatureState();
-    }
-});
 
-// 2. Escuchar cambios de visibilidad de la pestaña
-document.addEventListener('visibilitychange', updateFeatureState);
+        // registramos los listeners que reaccionarán a futuros cambios
+        chrome.runtime.onMessage.addListener((message) => {
+            if (message.command === 'updateState') {
+                isExtensionActive = message.isExtensionActive;
+                updateFeatureState();
+            }
+        });
+        document.addEventListener('visibilitychange', updateFeatureState);
+    });
+})();
+//#endregion
 
-// 3. Comprobar el estado inicial al cargar la página
-chrome.storage.sync.get("isExtensionActive", (data) => {
-    isExtensionActive = data.isExtensionActive;
-    updateFeatureState();
-});
-
+//#region       UPDATE FEATURES (activate/deactivate) 
 function updateFeatureState() {
     const shouldBeActive = isExtensionActive && !document.hidden;
-
-    if (shouldBeActive && !areFeaturesActiveInTab) {
-        // Debe estar activo, pero no lo está -> Activar
-        activateExtensionFeatures();
-    } else if (!shouldBeActive && areFeaturesActiveInTab) {
-        // No debe estar activo, pero lo está -> Desactivar
-        deactivateExtensionFeatures();
-    }
+    if      (shouldBeActive && !areFeaturesActiveInTab) activateExtensionFeatures();
+    else if (!shouldBeActive && areFeaturesActiveInTab) deactivateExtensionFeatures();
 }
 
 const activateExtensionFeatures = () => {
     areFeaturesActiveInTab = true;
-    document.addEventListener('keydown', handleKeyDown);
-    console.log("XeviTV: Funcionalidades activadas en esta pestaña.");
+    if (!menuElement) menuElement = createMenu();
 
-    if (!document.getElementById("xtv_menu")) {
-        createMenu();
-        console.log("XeviTV: Menú creado en esta pestaña.");
-    }
+    document.addEventListener('keydown', handleKeyDown);
+    menukeyPressed();
+    console.log("XeviTV: Funcionalidades activadas en esta pestaña");
 };
 
 const deactivateExtensionFeatures = () => {
     areFeaturesActiveInTab = false;
     document.removeEventListener('keydown', handleKeyDown);
-    console.log("XeviTV: Funcionalidades desactivadas en esta pestaña.");
+    menuElement?.classList.remove("show"); // Ocultar el menú al desactivar la extensión
+    console.log("XeviTV: Funcionalidades desactivadas en esta pestaña");
 };
+//#endregion
 
-const handleKeyDown = (event) => {
-    if (event.key === 'Backspace') menukeyPressed();
-};
-
+//#region       FUNCTION - createMenu 
 function createMenu(){
     const menu = document.createElement("div");
     menu.id = "xtv_menu";
@@ -64,12 +60,22 @@ function createMenu(){
         }
     });
     document.body.appendChild(menu);
+    console.log("XeviTV: Elemento del menú creado y añadido al DOM");
+    return menu;
 }
+//#endregion
 
+//#region       FUNCTION - handleKyeDown 
+const handleKeyDown = (event) => {
+    if (event.key === 'Backspace') menukeyPressed();
+}
+//#endregion
+
+//#region       FUNCTION - menukeyPressed 
 async function menukeyPressed(){
     if (document.fullscreenElement) await document.exitFullscreen();
 
-    const menu = document.getElementById("xtv_menu");
-    if(menu.classList.contains("show")) menu.classList.remove("show");
-    else menu.classList.add("show");
+    if(menuElement && menuElement.classList.contains("show")) menuElement.classList.remove("show");
+    else menuElement?.classList.add("show");
 }
+//#endregion

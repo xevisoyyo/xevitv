@@ -1,28 +1,20 @@
 const icons = {
   active: {
-    "16": "icons/16_active.png",
-    "48": "icons/48_active.png"
+    "16": "/icons/16_active.png",
+    "48": "/icons/48_active.png"
   },
   inactive: {
-    "16": "icons/16_inactive.png",
-    "48": "icons/48_inactive.png"
+    "16": "/icons/16_inactive.png",
+    "48": "/icons/48_inactive.png"
   }
 };
 
 //#region       INITIALIZATION 
-/**
- * Función principal que se ejecuta cuando el service worker arranca.
- * Orquesta todas las tareas de inicialización.
- */
-async function initializeExtension() {
-  // Ejecutamos tareas de inicialización independientes en paralelo para mayor eficiencia.
-  await Promise.all([
-    syncInitialState(),
-    saveChannelsLocaly()
-  ]);
+(async () => {
+  await syncInitialState();
+  await saveChannelsLocaly();
   console.log('XeviTV: Extensión inicializada.');
-}
-initializeExtension();
+})();
 //#endregion
 
 //#region       EVENT LISTENERS 
@@ -31,21 +23,21 @@ chrome.runtime.onInstalled.addListener(async (details) => { // ON EXTENSION INST
     console.log('XeviTV: Extensión instalada.');
 
     const newState = true;
-    await setExtensionState(newState);
+    await switchExtensionState(newState);
   }
 });
 
 chrome.action.onClicked.addListener(async (tab) => {        // ON EXTENSION CLICKED | set extension state and update listeners on all tabs 
   const newState = !(await getExtensionState());
-  await setExtensionState(newState);
-  await updateListenersOnAlltabs(newState);
+  await switchExtensionState(newState);
 });
 //#endregion 
 
-//#region       FUNCTION - setExtensionState 
-async function setExtensionState(newState) {
+//#region       FUNCTION - switchExtensionState 
+async function switchExtensionState(newState) {
   await chrome.storage.sync.set({ isExtensionActive: newState });
-  updateIcon(newState);
+  await updateIcon(newState);
+  await updateListenersOnAlltabs(newState);
   console.log(`Extensión ${newState ? 'activa' : 'inactiva'}`);
 }
 //#endregion
@@ -74,9 +66,9 @@ async function updateListenersOnAlltabs(newState) {
 //#endregion
 
 //#region       FUNCTION - updateIcon 
-function updateIcon(isExtensionActive) {
+async function updateIcon(isExtensionActive) {
     const iconPath = isExtensionActive ? icons.active : icons.inactive;
-    chrome.action.setIcon({ path: iconPath });
+    await chrome.action.setIcon({ path: iconPath });
     console.log('XeviTV: Icono sincronizado.');
 }
 //#endregion
@@ -85,7 +77,7 @@ function updateIcon(isExtensionActive) {
 async function syncInitialState() {
   const isExtensionActive = await getExtensionState();
   // Actualizamos el icono y notificamos a las pestañas.
-  updateIcon(isExtensionActive);
+  await updateIcon(isExtensionActive);
   await updateListenersOnAlltabs(isExtensionActive);
 }
 //#endregion

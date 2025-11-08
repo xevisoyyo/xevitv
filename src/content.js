@@ -73,9 +73,7 @@ const handleKeyDown = (event) => {
 
 //#region       FUNCTION - menukeyPressed 
 async function menukeyPressed(){
-    if (document.fullscreenElement) await document.exitFullscreen();
-
-    if(menuElement && menuElement.classList.contains("show")) menuElement.classList.remove("show");
-    else menuElement?.classList.add("show");
+    if (document.fullscreenElement) await document.exitFullscreen();    
+    menuElement?.classList.toggle("show");
 }
 //#endregion

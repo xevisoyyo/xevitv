@@ -88,19 +88,21 @@ async function saveChannelsLocaly() {
     {
       "name": "Antena 3",
       "dir": "antena3",
-      "platform": "atresplayer",
       "url": "https://www.atresplayer.com/directos/antena3/"
     },
     {
       "name": "Cuatro",
       "dir": "cuatro",
-      "platform": "cuatro",
       "url": "https://www.cuatro.com/en-directo/"
+    },
+    {
+      "name": "La 1",
+      "dir": "teleonline",
+      "url": "https://teleonline.org/canal/la-1/"
     },
     {
       "name": "Tele 5",
       "dir": "telecinco",
-      "platform": "telecinco",
       "url": "https://www.telecinco.es/endirecto/"
     }
   ];

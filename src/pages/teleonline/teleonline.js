@@ -1,65 +1,76 @@
 /**
  * Este script se ejecuta en las páginas de teleonline.org/canal/*
  * Su objetivo es:
- * 1. Activar el audio del reproductor de forma fiable usando su API.
- * 2. Poner el reproductor en pantalla completa con la primera interacción del usuario.
+ * 1. Activar el audio simulando un clic en el botón de volumen de la página.
+ * 3. Poner el reproductor en pantalla completa con la primera interacción del usuario.
  */
+
+// Inicia la espera de los controles del reproductor cuando el script se carga.
+waitForControls();
 
 /**
- * Configura un MutationObserver para esperar a que los controles del reproductor
- * y el botón de volumen estén disponibles en el DOM.
+ * Se ejecuta cuando los botones y el vídeo están listos.
+ * @param {HTMLElement} volumeButton - El botón de volumen de la página.
+ * @param {HTMLVideoElement} videoElement - El elemento de vídeo.
  */
-function waitForPlayerAndSetup() {
-    const targetNode = document.getElementById('tab-content');
+function onControlsReady(volumeButton, videoElement) {
+    console.log("XeviTV: Controles iniciales y vídeo detectados.");
 
-    if (!targetNode) {
-        console.error("XeviTV: No se encontró el contenedor del reproductor ('#tab-content').");
-        return;
-    }
+    const clickVolumeButton = () => {
+        // Solo hacemos clic si el botón de volumen todavía es visible (no se ha usado ya).
+        if (volumeButton.style.display !== 'none') {
+            setTimeout(() => volumeButton.click(), 300); // Pequeño retardo para ganar la "carrera de condiciones"
+            console.log("XeviTV: Clic en el botón de volumen para activar audio.");
+        }
+    };
 
-    console.log("XeviTV: Observando el contenedor del reproductor para detectar cambios...");
+    // 1. Esperar a que el vídeo empiece a reproducirse para evitar que la página anule el clic.
+    videoElement.addEventListener('playing', () => {
+        // Si la pestaña está activa, activamos el audio.
+        if (!document.hidden) {
+            clickVolumeButton();
+        } else {
+            // Si la pestaña no está activa, esperamos a que el usuario vuelva a ella.
+            console.log("XeviTV: La pestaña no está activa. Esperando a que sea visible para activar el audio.");
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) clickVolumeButton();
+            }, { once: true });
+        }
+    }, { once: true });
 
-    const observer = new MutationObserver((mutationsList, obs) => {
-        // 1. Buscamos el elemento del DOM donde Clappr se renderiza.
-        const playerElement = document.querySelector('[data-player]');
-
-        if (playerElement) {
-            // 2. Una vez que el elemento existe, buscamos la instancia del reproductor.
-            // La página la guarda en una propiedad del elemento.
-            const clapprInstance = playerElement.clappr;
-            
-            // 3. Buscamos el botón de pantalla completa.
-            const fullscreenButton = playerElement.querySelector('button[data-fullscreen]');
-
-            // 4. Solo si la instancia y el botón están listos, procedemos.
-            if (clapprInstance && fullscreenButton) {
-                console.log("XeviTV: Instancia de Clappr y controles detectados. Activando funcionalidades.");
-                
-                // Usamos la API de Clappr para activar el audio de forma fiable.
-                // Esto evita que el reproductor se vuelva a silenciar por su propia configuración.
-                clapprInstance.unmute();
-                clapprInstance.setVolume(85); // Opcional: ajusta el volumen a un nivel cómodo
-                console.log("XeviTV: Audio activado a través de la API de Clappr.");
-                
-                // Preparamos la pantalla completa para el primer clic del usuario.
-                document.addEventListener('click', () => {
-                    fullscreenButton.click();
-                }, { once: true });
-                console.log("XeviTV: Funcionalidad de pantalla completa lista. Haz clic en cualquier lugar para entrar.");
-
-                // Ocultamos el botón de volumen manual de la página, ya que no lo necesitamos.
-                const volumeButton = document.getElementById('volume-button');
-                if (volumeButton) volumeButton.style.display = 'none';
-
-                // 5. Dejamos de observar, nuestro trabajo aquí ha terminado.
-                obs.disconnect();
+    // 2. Preparamos la pantalla completa para el primer clic REAL del usuario.
+    document.addEventListener('click', (event) => {
+        // Solo actuar si:
+        // 1. El clic es del usuario (isTrusted).
+        // 2. No estamos ya en pantalla completa.
+        // 3. El clic NO se hizo dentro del contenedor del reproductor.
+        if (event.isTrusted && !document.fullscreenElement && !event.target.closest('[data-player]')) {
+            const currentFullscreenButton = document.querySelector('button[data-fullscreen]');
+            if (currentFullscreenButton) {
+                currentFullscreenButton.click();
+                console.log("XeviTV: Clic del usuario detectado, intentando pantalla completa.");
             }
         }
     });
-
-    // Empezamos a observar el nodo objetivo en busca de cambios en sus hijos.
-    observer.observe(targetNode, { childList: true, subtree: true });
 }
 
-// Inicia la espera del reproductor cuando el script se carga.
-waitForPlayerAndSetup();
+/**
+ * Espera a que los botones de control y el vídeo estén disponibles en la página.
+ */
+function waitForControls() {
+    const observer = new MutationObserver((mutations, obs) => {        
+        // El botón de volumen que añade la propia página
+        const volumeButton = document.getElementById('volume-button');
+        // El botón de fullscreen que crea el reproductor Clappr
+        const fullscreenButton = document.querySelector(".media-control-button.media-control-icon[data-fullscreen]");
+        // El elemento de vídeo
+        const videoElement = document.querySelector('video[data-html5-video]');
+
+        // Si encontramos los tres elementos, procedemos.
+        if (volumeButton && fullscreenButton && videoElement) {
+            obs.disconnect(); // Dejamos de observar, nuestro trabajo ha terminado.
+            onControlsReady(volumeButton, videoElement);
+        }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });    
+}

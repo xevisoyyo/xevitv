@@ -23,7 +23,7 @@
     
 }
 
-#xtv_menu a{
+#xtv_menu .channel{
     display: block;
     margin: 10px;
     padding: 10px;
@@ -37,14 +37,14 @@
     background-color: rgba(31, 41, 2, 0.85);
 }
 
-#xtv_menu a:hover{
+#xtv_menu .channel:hover{
     cursor: pointer;
     color: rgb(140, 169, 0);
     border-color: rgb(140, 169, 0);
     background-color: rgba(85, 110, 11, 0.85);
 }
 
-#xtv_menu a.selected{
+#xtv_menu .channel.selected{
     font-size: 40px;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     color: rgb(140, 169, 0);

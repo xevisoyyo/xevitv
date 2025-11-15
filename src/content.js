@@ -1,6 +1,7 @@
 let isExtensionActive = false;
 let areFeaturesActiveInTab = false;
 let menuElement = null;
+let loadedChannels = [];
 
 //#region       INITIALIZATION & EVENT LISTENERS 
 (function setupInitialStateAndListeners() {
@@ -29,51 +30,78 @@ function updateFeatureState() {
     else if (!shouldBeActive && areFeaturesActiveInTab) deactivateExtensionFeatures();
 }
 
-const activateExtensionFeatures = () => {
+async function activateExtensionFeatures() {
     areFeaturesActiveInTab = true;
-    if (!menuElement) menuElement = createMenu();
+    if (!menuElement) {
+        menuElement = await createMenu();
+    }
 
-    document.addEventListener('keydown', handleKeyDown);
-    menukeyPressed();
+    // Técnica de seguridad: quitar el listener antes de añadirlo para evitar duplicados.
+    menuElement.removeEventListener('click', handleMenuClick);
+    menuElement.addEventListener('click', handleMenuClick);
+    menuElement.classList.add("show"); // Mostrar el menú
     console.log("XeviTV: Funcionalidades activadas en esta pestaña");
-};
+}
 
-const deactivateExtensionFeatures = () => {
+function deactivateExtensionFeatures() {
     areFeaturesActiveInTab = false;
-    document.removeEventListener('keydown', handleKeyDown);
-    menuElement?.classList.remove("show"); // Ocultar el menú al desactivar la extensión
+    if (menuElement) {
+        menuElement.removeEventListener('click', handleMenuClick);
+        menuElement.classList.remove("show"); // Ocultar el menú
+    }
     console.log("XeviTV: Funcionalidades desactivadas en esta pestaña");
-};
+}
 //#endregion
 
 //#region       FUNCTION - createMenu 
-function createMenu(){
-    const menu = document.createElement("div");
-    menu.id = "xtv_menu";
-    chrome.storage.local.get("channels", ({ channels }) => {
-        if (!channels) return;
-        for (const channel of channels) {
-            const a = document.createElement("a");
-            a.href = channel.url;
-            a.textContent = channel.name;
-            menu.appendChild(a);
-        }
+function createMenu() {
+    return new Promise((resolve) => {
+        const menu = document.createElement("div");
+        menu.id = "xtv_menu";
+        chrome.storage.sync.get("channels", ({ channels }) => {
+            if (channels) {
+                loadedChannels = channels;
+                for (const channel of channels) {
+                    const channelElement = document.createElement("span");
+                    channelElement.dataset.url = channel.url;
+                    channelElement.className = `channel${channel.selected ? " selected" : ""}`;
+                    channelElement.textContent = channel.name;
+                    menu.appendChild(channelElement);
+                }
+            }
+            document.body.appendChild(menu);
+            console.log("XeviTV: Elemento del menú creado y añadido al DOM");
+            resolve(menu);
+        });
     });
-    document.body.appendChild(menu);
-    console.log("XeviTV: Elemento del menú creado y añadido al DOM");
-    return menu;
 }
 //#endregion
 
-//#region       FUNCTION - handleKyeDown 
-const handleKeyDown = (event) => {
-    if (event.key === 'Backspace') menukeyPressed();
-}
+//#region       EVENT HANDLERS (Keyboard & Click)
+const handleMenuClick = async (event) => {
+  const clickedElement = event.target;
+  // Asegurarnos de que hemos hecho clic en un elemento de canal
+  if (clickedElement.classList.contains("channel")) {
+    // Si ya está seleccionado, no hacemos nada
+    if (clickedElement.classList.contains("selected")) return;
+
+    const newUrl = clickedElement.dataset.url;
+
+    // Actualizamos la lista de canales para reflejar la nueva selección
+    const updatedChannels = loadedChannels.map(channel => ({
+      ...channel,
+      selected: channel.url === newUrl
+    }));
+
+    // Guardamos la lista actualizada y luego navegamos
+    await chrome.storage.sync.set({ channels: updatedChannels });
+    location.href = newUrl;
+  }
+};
 //#endregion
 
 //#region       FUNCTION - menukeyPressed 
 async function menukeyPressed(){
-    if (document.fullscreenElement) await document.exitFullscreen();    
-    menuElement?.classList.toggle("show");
+    if (document.fullscreenElement) await document.exitFullscreen();
 }
 //#endregion

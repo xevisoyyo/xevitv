@@ -64,7 +64,7 @@ function createMenu() {
                 for (const channel of channels) {
                     const channelElement = document.createElement("span");
                     channelElement.dataset.url = channel.url;
-                    channelElement.className = `channel${channel.selected ? " selected" : ""}`;
+                    channelElement.className = `channel${channel.selected ? " selected active" : ""}`;
                     channelElement.textContent = channel.name;
                     menu.appendChild(channelElement);
                 }

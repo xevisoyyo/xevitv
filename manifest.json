@@ -8,7 +8,7 @@
     ,"tabs"
   ],
   "content_scripts": [
-    {"matches": ["<all_urls>"], "js": ["src/content.js"], "css": ["src/menu.css"]},
+    {"matches": ["<all_urls>"], "js": ["src/menu.js"], "css": ["src/menu.css"]},
     {"matches": ["https://teleonline.org/canal/*"], "js": ["src/pages/teleonline/teleonline.js"], "css": ["src/pages/teleonline/teleonline.css"]}
   ],
   "action": {

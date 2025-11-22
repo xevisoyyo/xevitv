@@ -36,10 +36,11 @@ async function activateExtensionFeatures() {
         menuElement = await createMenu();
     }
 
-    // Técnica de seguridad: quitar el listener antes de añadirlo para evitar duplicados.
-    menuElement.removeEventListener('click', handleMenuClick);
+    menuElement.removeEventListener('click', handleMenuClick); // técnica de seguridad: quitar el listener antes de añadirlo para evitar duplicados.
     menuElement.addEventListener('click', handleMenuClick);
-    menuElement.classList.add("show"); // Mostrar el menú
+    document.removeEventListener("keydown", handleKeydown);
+    document.addEventListener("keydown", handleKeydown);
+    menuElement.classList.add("show"); // mostrar el menú
     console.log("XeviTV: Funcionalidades activadas en esta pestaña");
 }
 
@@ -47,7 +48,8 @@ function deactivateExtensionFeatures() {
     areFeaturesActiveInTab = false;
     if (menuElement) {
         menuElement.removeEventListener('click', handleMenuClick);
-        menuElement.classList.remove("show"); // Ocultar el menú
+        document.removeEventListener("keydown", handleKeydown);
+        menuElement.classList.remove("show"); // ocultar el menú
     }
     console.log("XeviTV: Funcionalidades desactivadas en esta pestaña");
 }
@@ -77,7 +79,7 @@ function createMenu() {
 }
 //#endregion
 
-//#region       EVENT HANDLERS (Keyboard & Click)
+//#region       EVENT HANDLERS - click 
 const handleMenuClick = async (event) => {
   const clickedElement = event.target;
   // Asegurarnos de que hemos hecho clic en un elemento de canal
@@ -98,6 +100,26 @@ const handleMenuClick = async (event) => {
     location.href = newUrl;
   }
 };
+//#endregion
+
+//#region       EVENT HANDLERS - keydown 
+const handleKeydown = (event) => {
+    const key = event.key;
+    console.log("xtv: ", key)
+    const channelElements = document.querySelectorAll("#xtv_menu span");
+    if (channelElements.length < 2) return;
+    const activeChannelElement = channelElements[0].parentElement.querySelector(".selected") || channelElements[0];
+    if(key === "ArrowUp"){
+        const previousChannelElement = activeChannelElement.previousElementSibling || channelElements[channelElements.length - 1];
+        activeChannelElement.classList.remove("selected");
+        previousChannelElement.classList.add("selected");
+    }
+    else if(key == "ArrowDown"){
+        const nextChannelElement = activeChannelElement.nextElementSibling || channelElements[0];
+        activeChannelElement.classList.remove("selected");
+        nextChannelElement.classList.add("selected");
+    }
+}
 //#endregion
 
 //#region       FUNCTION - menukeyPressed 
